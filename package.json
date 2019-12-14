@@ -1,0 +1,21 @@
+{
+  "name": "pvoutput",
+  "version": "1.0.0",
+  "description": "simple module to add statuses and retrieve status from pvoutput.org",
+  "main": "pvoutput.js",
+  "devDependencies": {},
+  "dependencies": {
+    "moment": "^2.18.1",
+    "request-promise": "^4.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/peterpeerdeman/pvoutput"
+  },
+  "author": "Peter Peerdeman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/peterpeerdeman/pvoutput/issues"
+  },
+  "homepage": "https://github.com/peterpeerdeman/pvoutput"
+}
