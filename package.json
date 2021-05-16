@@ -19,7 +19,7 @@
     "url": "https://github.com/peterpeerdeman/pvoutput"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha"
+    "test": "./node_modules/mocha/bin/mocha test/pvoutput.test.js"
   },
   "author": "Peter Peerdeman",
   "license": "MIT",
