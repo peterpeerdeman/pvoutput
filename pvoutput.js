@@ -3,7 +3,6 @@ const querystring = require('querystring');
 const moment = require('moment');
 
 function pvoutput(settings) {
-
     const apiKey = settings.apiKey;
     const systemId = settings.systemId;
 
@@ -27,8 +26,7 @@ function pvoutput(settings) {
     v11 Extended Value 5    No  number  User Defined    192 r2  DONATION MODE
     v12 Extended Value 6    No  number  User Defined    9281.24 r2  DONATION MODE
     */
-    this.addStatus = function(pvoutputdata) {
-
+    this.addStatus = function (pvoutputdata) {
         var timestamp = moment(pvoutputdata.datetime);
         var date = timestamp.format('YYYYMMDD');
         var time = timestamp.format('HH:mm');
@@ -43,7 +41,7 @@ function pvoutput(settings) {
             v3: pvoutputdata.energyConsumption,
             v4: pvoutputdata.powerConsumption,
             v5: pvoutputdata.temperature,
-            v6: pvoutputdata.voltage
+            v6: pvoutputdata.voltage,
         };
 
         var query = querystring.stringify(params);
@@ -70,7 +68,7 @@ function pvoutput(settings) {
      * Temperature  decimal celsius 15.3
      * Voltage  decimal volts   240.1
      */
-    this.getStatus = function() {
+    this.getStatus = function () {
         var params = {
             key: apiKey,
             sid: systemId,
@@ -82,27 +80,33 @@ function pvoutput(settings) {
 
         return rp({
             uri: url,
-            simple: false
-        }).then(function(body) {
-            var results = body.split(',');
-            results = filterNanValues(results);
-
-            return {
-                date: moment(results[0]).toDate(),
-                time: results[1],
-                energyGeneration: parseInt(results[2]),
-                powerGeneration: parseInt(results[3]),
-                energyConsumption: parseInt(results[4]),
-                powerConsumption: parseInt(results[5]),
-                efficiency: parseFloat(results[6]),
-                temperature: parseFloat(results[7]),
-                voltage: parseFloat(results[8])
-            };
+            simple: false,
         })
-        .catch(function(err) {
-            return err;
-        });
+            .then(function (body) {
+                if (
+                    body.match(/Forbidden 403: Exceeded 60 requests per hour/)
+                ) {
+                    return false;
+                }
 
+                var results = body.split(',');
+                results = filterNanValues(results);
+
+                return {
+                    date: moment(results[0]).toDate(),
+                    time: results[1],
+                    energyGeneration: parseInt(results[2]),
+                    powerGeneration: parseInt(results[3]),
+                    energyConsumption: parseInt(results[4]),
+                    powerConsumption: parseInt(results[5]),
+                    efficiency: parseFloat(results[6]),
+                    temperature: parseFloat(results[7]),
+                    voltage: parseFloat(results[8]),
+                };
+            })
+            .catch(function (err) {
+                return err;
+            });
     };
 
     /*
@@ -125,7 +129,7 @@ function pvoutput(settings) {
      * Shoulder Energy Import   number  watt hours  2030
      * High-Shoulder Energy Import  number  watt hours  3888')
      */
-    this.getOutput = function() {
+    this.getOutput = function () {
         var params = {
             key: apiKey,
             sid: systemId,
@@ -137,40 +141,39 @@ function pvoutput(settings) {
 
         return rp({
             uri: url,
-            simple: false
-        }).then(function(body) {
-            var dayOutputs = body.split(';');
-            return dayOutputs.map(function(day) {
-                var dayValues = day.split(',');
-                dayValues = filterNanValues(dayValues);
-                return {
-                    date: moment(dayValues[0]).toDate(),
-                    energyGenerated: parseInt(dayValues[1]),
-                    efficiency: parseFloat(dayValues[2]),
-                    energyExported: parseInt(dayValues[3]),
-                    energyUsed: parseInt(dayValues[4]),
-                    peakPower: parseInt(dayValues[5]),
-                    peakTime: dayValues[6],
-                    condition: dayValues[7],
-                    minTemperature: parseFloat(dayValues[8]),
-                    maxTemperature: parseFloat(dayValues[9]),
-                    peakEnergyImport: parseInt(dayValues[10]),
-                    offPeakEnergyImport: parseInt(dayValues[11]),
-                    shoulderEnergyImport: parseInt(dayValues[12]),
-                    highShoulderEnergyImport: parseInt(dayValues[13]),
-                };
-            });
-
+            simple: false,
         })
-        .catch(function(err) {
-            return err;
-        });
-
+            .then(function (body) {
+                var dayOutputs = body.split(';');
+                return dayOutputs.map(function (day) {
+                    var dayValues = day.split(',');
+                    dayValues = filterNanValues(dayValues);
+                    return {
+                        date: moment(dayValues[0]).toDate(),
+                        energyGenerated: parseInt(dayValues[1]),
+                        efficiency: parseFloat(dayValues[2]),
+                        energyExported: parseInt(dayValues[3]),
+                        energyUsed: parseInt(dayValues[4]),
+                        peakPower: parseInt(dayValues[5]),
+                        peakTime: dayValues[6],
+                        condition: dayValues[7],
+                        minTemperature: parseFloat(dayValues[8]),
+                        maxTemperature: parseFloat(dayValues[9]),
+                        peakEnergyImport: parseInt(dayValues[10]),
+                        offPeakEnergyImport: parseInt(dayValues[11]),
+                        shoulderEnergyImport: parseInt(dayValues[12]),
+                        highShoulderEnergyImport: parseInt(dayValues[13]),
+                    };
+                });
+            })
+            .catch(function (err) {
+                return err;
+            });
     };
 }
 
 function filterNanValues(results) {
-    return results.map(function(result) {
+    return results.map(function (result) {
         if (result === 'NaN') {
             return undefined;
         }
