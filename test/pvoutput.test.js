@@ -27,6 +27,10 @@ const pvoutput_output_response = fs.readFileSync(
     'test/response.pvoutput.output',
     'utf8'
 );
+const pvoutput_forbidden_response = fs.readFileSync(
+    'test/response.pvoutput.forbidden',
+    'utf8'
+);
 
 describe('pvoutput tests', () => {
     it('Should add a status', (done) => {
@@ -92,6 +96,20 @@ describe('pvoutput tests', () => {
             .reply(200, pvoutput_output_response);
         pvoutput.getOutput().then((response) => {
             expect(response).to.be.an('array');
+            done();
+        });
+    });
+    it('Should properly deal with 403 exceeded requests ', (done) => {
+        nock('http://pvoutput.org')
+            .get('/service/r2/getstatus.jsp')
+            .query({
+                key: 'apikey',
+                sid: 1234,
+            })
+            .reply(403, pvoutput_forbidden_response);
+        pvoutput.getStatus().then((response) => {
+            expect(response).to.be.a('boolean');
+            expect(response).to.equal(false);
             done();
         });
     });
