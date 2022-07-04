@@ -1,6 +1,6 @@
-const rp = require('request-promise');
 const querystring = require('querystring');
 const moment = require('moment');
+const axios = require('axios');
 
 function pvoutput(settings) {
     const apiKey = settings.apiKey;
@@ -48,8 +48,8 @@ function pvoutput(settings) {
 
         var url = 'http://pvoutput.org/service/r2/addstatus.jsp?' + query;
 
-        return rp({
-            uri: url,
+        return axios({
+            url: url,
         });
     };
 
@@ -78,16 +78,11 @@ function pvoutput(settings) {
 
         var url = 'http://pvoutput.org/service/r2/getstatus.jsp?' + query;
 
-        return rp({
-            uri: url,
-            simple: false,
+        return axios({
+            url: url,
         })
-            .then(function (body) {
-                if (
-                    body.match(/Forbidden 403: Exceeded 60 requests per hour/)
-                ) {
-                    return false;
-                }
+            .then(function (response) {
+                const body = response.data;
 
                 var results = body.split(',');
                 results = filterNanValues(results);
@@ -105,7 +100,7 @@ function pvoutput(settings) {
                 };
             })
             .catch(function (err) {
-                return err;
+                return false;
             });
     };
 
@@ -139,11 +134,11 @@ function pvoutput(settings) {
 
         var url = 'http://pvoutput.org/service/r2/getoutput.jsp?' + query;
 
-        return rp({
-            uri: url,
-            simple: false,
+        return axios({
+            url: url,
         })
-            .then(function (body) {
+            .then(function (response) {
+                const body = response.data;
                 var dayOutputs = body.split(';');
                 return dayOutputs.map(function (day) {
                     var dayValues = day.split(',');
@@ -167,6 +162,15 @@ function pvoutput(settings) {
                 });
             })
             .catch(function (err) {
+                if (
+                    err.response &&
+                    err.response.data &&
+                    err.response.data.match(
+                        /Forbidden 403: Exceeded 60 requests per hour/
+                    )
+                ) {
+                    return false;
+                }
                 return err;
             });
     };

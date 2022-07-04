@@ -94,12 +94,31 @@ describe('pvoutput tests', () => {
                 sid: 1234,
             })
             .reply(200, pvoutput_output_response);
+        pvoutput
+            .getOutput()
+            .then((response) => {
+                expect(response).to.be.an('array');
+                done();
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    });
+    it('getoutput should properly deal with 403 exceeded requests ', (done) => {
+        nock('http://pvoutput.org')
+            .get('/service/r2/getoutput.jsp')
+            .query({
+                key: 'apikey',
+                sid: 1234,
+            })
+            .reply(403, pvoutput_forbidden_response);
         pvoutput.getOutput().then((response) => {
-            expect(response).to.be.an('array');
+            expect(response).to.be.a('boolean');
+            expect(response).to.equal(false);
             done();
         });
     });
-    it('Should properly deal with 403 exceeded requests ', (done) => {
+    it('getstatus should properly deal with 403 exceeded requests ', (done) => {
         nock('http://pvoutput.org')
             .get('/service/r2/getstatus.jsp')
             .query({
