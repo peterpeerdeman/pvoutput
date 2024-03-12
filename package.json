@@ -1,6 +1,6 @@
 {
   "name": "pvoutput",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "simple module to add statuses and retrieve status from pvoutput.org",
   "main": "pvoutput.js",
   "devDependencies": {
